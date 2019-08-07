@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>banner-pc</title>
+    <style>
+        * {
+            padding: 0;
+            margin: 0;
+            list-style: none;
+            border: 0;
+        }
+        .yls_banner_box{
+            width: 520px;
+            height: 280px;
+            margin: 100px auto;
+            border: 1px solid #000;
+            padding: 5px;
+            position: relative;
+        }
+        .yls_banner_inner{
+            width: 520px;
+            height: 280px;
+            overflow: hidden;
+            position: relative;
+        }
+        .yls_banner_inner ul{
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 3120px;
+        }
+        .yls_banner_inner li{
+           width: 520px;
+            height: 280px;
+            overflow: hidden;
+            float: left;
+        }
+        .yls_banner_box ol{
+            position: absolute;
+            /*right: 10px;*/
+            left: 50%;
+            margin-left: -50px;
+            bottom: 10px;
+
+        }
+        .yls_banner_box ol li{
+            float: left;
+            width: 10px;
+            height: 10px;
+            background-color: #fff;
+            /*border: 1px solid #ccc;*/
+            margin-left: 10px;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+        .yls_banner_box ol li.current{
+            background-color: #DB192A;
+        }
+
+        .yls_arrow{
+            display: none;
+        }
+        .yls_arrow span{
+            width: 28px;
+            height: 30px;
+            position: absolute;
+            left: 5px;
+            top: 50%;
+            background-color: #000;
+            cursor: pointer;
+            line-height: 28px;
+            font-size: 20px;
+            text-align: center;
+            color: #fff;
+            opacity: 0.5;
+        }
+        .yls_arrow .left{
+            border-radius: 0 15px 15px 0;
+        }
+        .yls_arrow .right{
+            right: 5px;
+            left: auto;
+            border-radius: 15px 0 0 15px ;
+        }
+
+
+
+    </style>
+</head>
+<body>
+
+<div class="yls_banner_box" id="yls_banner_box">
+    <div class="yls_banner_inner">
+        <ul>
+            <li><img src="imgs/1.jpg" alt=""></li>
+            <li><img src="imgs/2.webp" alt=""></li>
+            <li><img src="imgs/3.jpg" alt=""></li>
+            <li><img src="imgs/4.webp" alt=""></li>
+            <li><img src="imgs/5.jpg" alt=""></li>
+        </ul>
+        <ol></ol>
+    </div>
+    <div class="yls_arrow" id="yls_arrow">
+        <span class="left" id="left"><</span>
+        <span class="right" id="right">></span>
+    </div>
+</div>
+
+</body>
+<script>
+    console.log(123);
+    //获取最外层的div
+    var box = my$('yls_banner_box');
+    //获取inner
+    var inner = box.children[0];
+    //获取inner的宽度
+    var imgWidth = inner.offsetWidth;
+    //获取ul
+    var ulObj = inner.children[0];
+    //获取ul中所有的li
+    var list = ulObj.children;
+    //获取ol
+    var olObj = inner.children[1];
+
+    //获取点击左右切换的按钮
+    var arr = my$('yls_arrow');
+    //全局变量
+    var pic = 0;
+    //创建小按钮----根据ul中的li个数
+    for(var i = 0;i < list.length; i++){
+        //创建li标签
+        var liObj = document.createElement('li');
+        //加入ol中
+        olObj.appendChild(liObj);
+        //在每个ol的li标签上添加一个自定义属性，存储索引值
+        liObj.setAttribute('index',i);
+        //注册鼠标进入事件
+        liObj.onmouseover = function () {
+            //去掉所有背景色
+            for(var j = 0;j < olObj.children.length; j++){
+                // console.log(olObj.children[j]);
+                olObj.children[j].removeAttribute("class");
+            }
+            //设置进入的li的背景色
+            this.className = 'current';
+            //获取鼠标进入的li的当前索引值
+            pic = this.getAttribute('index');
+            //移动轮播到指定索引
+            animate(ulObj, -pic * imgWidth);
+        }
+
+    }
+
+    //设置ol中第一个li有背景颜色
+    olObj.children[0].className = 'current';
+    //克隆一个ul中的li，加到最后，即最后一张就是第一张图片
+    ulObj.appendChild(ulObj.children[0].cloneNode(true));
+
+    //自动播放
+    var timeId = setInterval(clickHandle,2000);
+
+    //鼠标进入轮播的div显示左右箭头的div
+    box.onmouseover = function () {
+        arr.style.display = 'block';
+        //鼠标进入废掉之前的定时器，即滑动到轮播上的时候轮播停止
+        clearInterval(timeId);
+    };
+    //鼠标离开箭头隐藏两个箭头，并继续轮播
+    box.onmouseout = function () {
+        arr.style.display = 'none';
+        //鼠标离开自动播放
+        timeId = setInterval(clickHandle,2000);
+    };
+
+    //点击右边箭头按钮
+    my$('right').onclick = clickHandle;
+    function clickHandle() {
+        //如果pic的值是5，恰巧是ul中li的个数-1的值，此时页面显示第六章图，而用户会认为这事第一张图
+        //所以用户如果再次点击按钮，用户看到的应该是第二张图片
+        if(pic === list.length - 1){
+            //如何从第6张图跳到第一张图
+            //先设置pic=0
+            pic = 0;
+            //把ul的位置还原成开始的默认位置
+            ulObj.style.left = 0 + 'px';
+        }
+        //立刻设置pic加1；那么用户就会看到第二张图片了
+        pic++;
+        //pic从0的值加1之后，pic=1，然后ul轮播出去一张图
+        animate(ulObj, -pic * imgWidth);
+        //如果pic==5说明，此时显示第六张图（内容是第一张图），第一个小按钮有颜色
+        if(pic === list.length - 1){
+            //第五个按钮颜色干掉
+            olObj.children[olObj.children.length - 1].className = "";
+            //第一个按钮颜色设置上
+            olObj.children[0].className = 'current';
+        }else{
+            //干掉所有小按钮的背景颜色
+            for(var i = 0; i < olObj.children.length;i++){
+                olObj.children[i].removeAttribute('class');
+            }
+            olObj.children[pic].className = 'current';
+        }
+    };
+    //点击左边箭头按钮
+    my$('left').onclick = function () {
+        if(pic === 0){
+            pic = 5;
+            ulObj.style.left = -pic * imgWidth + 'px';
+        }
+        pic --;
+        animate(ulObj,-pic * imgWidth);
+        //设置小按钮的颜色，先干掉所有按钮颜色
+        for(var i = 0; i < olObj.children.length;i++){
+            olObj.children[i].removeAttribute('class');
+        }
+        //当前的pic索引对应的按钮设置颜色
+        olObj.children[pic].className = 'current';
+    };
+    //设置任意一个元素，移动到指定的目标位置
+    function animate(element, target) {
+        //清除定时器
+        clearInterval(element.timeId);
+        //定时器的id值存储到对象的一个属性中
+        element.timeId = setInterval(function () {
+            //获取元素的当前位置，数字类型
+            var current = element.offsetLeft;
+            //每次移动的距离
+            var step = 10;
+            step = current < target ? step:-step;
+            //当前移动到位置
+            current += step;
+            if(Math.abs(current - target) > Math.abs(step)){
+                element.style.left = current + 'px';
+            }else{
+                //清理定时器
+                clearInterval(element.timeId);
+                //直接到达目标
+                element.style.left = target + 'px';
+            }
+
+        },10)
+    }
+    //获取元素
+    function my$(id) {
+        return document.getElementById(id);
+    }
+
+</script>
+</html>
